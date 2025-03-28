@@ -63,28 +63,27 @@ st.markdown(
 uploaded_file = st.file_uploader("", type=["jpg", "png", "jpeg"])
 
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-    
-    # Preprocess the image
-    image = transform(image).unsqueeze(0)
     
     # Get predictions
-    with torch.no_grad():
-        outputs = model(image)
-      
-        _, predicted = torch.max(outputs, 1)
-        disease_name = CLASS_LABELS[predicted.item()]
-    
-    st.markdown(
-    f"""
-    <p style='color: #39ff14; font-size: 24px; font-weight: bold; text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14, 0 0 20px #39ff14;'>
-        🔍 Predicted Disease: {disease_name}
-    </p>
-    """,
-    unsafe_allow_html=True
-)
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="🖼 Uploaded Image", use_column_width=True)
+
+if st.button("🔍 Predict Disease"):
+        try:
+            # Preprocess the image
+            image_tensor = transform(image).unsqueeze(0)
+            
+            # Get prediction
+            with torch.no_grad():
+                outputs = model(image_tensor)
+                _, predicted = torch.max(outputs, 1)
+                disease_name = CLASS_LABELS[predicted.item()]
+            
+            # 🎯 Display result
+            st.success(f"🌱 **Predicted Disease:** {disease_name} ✅")
+        except Exception as e:
+            st.error(f"🚨 Prediction failed: {e}")
 
 
 
